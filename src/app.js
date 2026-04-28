@@ -1,8 +1,11 @@
-const pool = require('../src/config/db');
+const express = require('express');
+const app = express();
 
-const getEmpresas = async () => {
-  const result = await pool.query('SELECT * FROM empresa');
-  console.log(result.rows);
-};
+const empresaRoutes = require('./modules/empresa/empresa.routes');
 
-getEmpresas()
+app.use(express.json());
+
+// prefijo API
+app.use('/api/empresas', empresaRoutes);
+
+module.exports = app;
