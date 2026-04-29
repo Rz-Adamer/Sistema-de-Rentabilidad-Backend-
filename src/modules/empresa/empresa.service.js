@@ -7,6 +7,22 @@ const getEmpresas = async () => {
   return empresas;
 };
 
+const createEmpresa = async ({ nombre }) => {
+  // 🔒 regla: no duplicados
+  const existe = await empresaRepository.findByName(nombre);
+
+  if (existe) {
+    const error = new Error('La empresa ya existe');
+    error.status = 400;
+    throw error;
+  }
+
+  const empresa = await empresaRepository.create({ nombre });
+
+  return empresa;
+};
+
 module.exports = {
-  getEmpresas
+  getEmpresas,
+  createEmpresa
 };

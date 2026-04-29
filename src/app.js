@@ -4,12 +4,15 @@ const app = express();
 
 const authRoutes = require("./modules/auth/auth.routes");
 const empresaRoutes = require("./modules/empresa/empresa.routes");
+const errorHandler = require('./modules/middlewares/errorHandler');
 
 app.use(express.json());
 
-// prefijo API
-
+// prefijos API
 app.use("/api/auth", authRoutes);
 app.use("/api/empresas", empresaRoutes);
+
+// SIEMPRE AL FINAL
+app.use(errorHandler);
 
 module.exports = app;

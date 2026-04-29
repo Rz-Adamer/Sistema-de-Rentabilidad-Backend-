@@ -13,6 +13,22 @@ const getEmpresas = async (req, res, next) => {
   }
 };
 
+const createEmpresa = async (req, res, next) => {
+  try {
+    const { nombre } = req.body;
+
+    const nuevaEmpresa = await empresaService.createEmpresa({ nombre });
+
+    res.status(201).json({
+      success: true,
+      data: nuevaEmpresa
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  getEmpresas
+  getEmpresas,
+  createEmpresa
 };
