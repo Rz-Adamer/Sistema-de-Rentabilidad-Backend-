@@ -2,7 +2,7 @@ const pool = require('../../config/db');
 
 const findByEmpresaId = async (empresaId) => {
   const result = await pool.query(
-    `SELECT id_servicio, nombre, descripcion, id_empresa
+    `SELECT id_servicio, nombre, descripcion
      FROM servicio
      WHERE id_empresa = $1 AND is_active = true
      ORDER BY nombre ASC`,
@@ -14,7 +14,7 @@ const findByEmpresaId = async (empresaId) => {
 
 const findById = async (servicioId) => {
   const result = await pool.query(
-    `SELECT id_servicio, nombre, descripcion, id_empresa
+    `SELECT id_servicio, nombre, descripcion
      FROM servicio
      WHERE id_servicio = $1 AND is_active = true`,
     [servicioId]

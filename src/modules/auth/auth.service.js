@@ -3,7 +3,7 @@ const { hashPassword, comparePassword } = require("../../utils/hash");
 const { generateToken } = require("../../utils/jwt");
 
 //LOGIN
-const loginService = async(email, password) => {
+const loginService = async (email, password) => {
     const user = await authRepository.findUserByEmail(email);
 
     if (!user) {
@@ -24,6 +24,7 @@ const loginService = async(email, password) => {
         id_usuario: user.id_usuario,
         email: user.email,
         rol: user.rol,
+        id_empresa: user.id_empresa
     });
 
     return {
@@ -38,7 +39,7 @@ const loginService = async(email, password) => {
 };
 
 //Registra Dueño
-const registerOwnerService = async(id_empresa, nombre, email, password) => {
+const registerOwnerService = async (id_empresa, nombre, email, password) => {
     // validar email formato
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
