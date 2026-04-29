@@ -1,8 +1,19 @@
 const express = require("express");
-const { login } = require("../auth/auth.controller");
-
 const router = express.Router();
 
+const { login } = require("../auth/auth.controller");
+const authMiddleware = require("../middlewares/authMiddleware");
+const roleMiddleware = require("../middlewares/roleMiddleware");
+const authController = require("./auth.controller");
+
 router.post("/login", login);
+
+//admin crea dueño
+router.post(
+    "/register-owner",
+    authMiddleware,
+    roleMiddleware("admin"),
+    authController.registerOwner,
+);
 
 module.exports = router;
