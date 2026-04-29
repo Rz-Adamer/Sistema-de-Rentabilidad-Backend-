@@ -4,7 +4,7 @@ const app = express();
 
 const authRoutes = require("./modules/auth/auth.routes");
 const empresaRoutes = require("./modules/empresa/empresa.routes");
-const errorHandler = require('./modules/middlewares/errorHandler');
+const errorHandler = require("./modules/middlewares/errorHandler");
 
 app.use(express.json());
 
