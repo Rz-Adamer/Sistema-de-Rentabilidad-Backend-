@@ -1,7 +1,7 @@
 const servicioService = require("./servicio.service");
 const usuarioRepository = require("../usuario/usuario.repository");
 
-const getServicios = async(req, res, next) => {
+const getServicios = async (req, res, next) => {
     try {
         // 📌 Verificar que el usuario esté autenticado
         if (!req.user || !req.user.id_usuario) {
@@ -54,7 +54,7 @@ const getServicios = async(req, res, next) => {
     }
 };
 
-const createServicio = async(req, res, next) => {
+const createServicio = async (req, res, next) => {
     try {
         const { nombre, descripcion } = req.body;
 

@@ -2,9 +2,27 @@ const empresaService = require('./empresa.service');
 
 const getEmpresas = async (req, res, next) => {
   try {
+    // 📌 Verificar que el usuario esté autenticado
+    if (!req.user || !req.user.id_usuario) {
+      return res.status(401).json({
+        success: false,
+        message: "Usuario no autenticado",
+      });
+    }
+
     const empresas = await empresaService.getEmpresas();
 
-    res.status(200).json({
+    // ✅ Caso: no hay empresas registradas
+    if (empresas.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No hay empresas disponibles",
+        data: [],
+      });
+    }
+
+    // ✅ Caso: hay empresas
+    return res.status(200).json({
       success: true,
       data: empresas
     });
@@ -16,6 +34,14 @@ const getEmpresas = async (req, res, next) => {
 const createEmpresa = async (req, res, next) => {
   try {
     const { nombre } = req.body;
+
+    // 📌 Verificar que el usuario esté autenticado
+    if (!req.user || !req.user.id_usuario) {
+      return res.status(401).json({
+        success: false,
+        message: "Usuario no autenticado",
+      });
+    }
 
     const nuevaEmpresa = await empresaService.createEmpresa({ nombre });
 

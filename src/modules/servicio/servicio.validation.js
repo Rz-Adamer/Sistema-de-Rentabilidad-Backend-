@@ -1,33 +1,29 @@
-// Validaciones para los endpoints de servicio
+const { body, param, validationResult } = require('express-validator');
 
-const createServicioValidation = (req, res, next) => {
-  const { nombre, descripcion } = req.body;
+const createServicioValidation = [
+  body('nombre')
+    .notEmpty().withMessage('El nombre es obligatorio')
+    .isLength({ min: 3 }).withMessage('Mínimo 3 caracteres')
+    .matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/)
+    .withMessage('El nombre solo debe contener letras y espacios'),
 
-  // 🔒 Validar nombre
-  if (!nombre || nombre.trim() === '') {
-    return res.status(400).json({
-      success: false,
-      message: 'El nombre del servicio es requerido'
-    });
+  body('descripcion')
+    .optional({ checkFalsy: true })
+    .isLength({ min: 10 }).withMessage('Mínimo 10 caracteres')
+    .matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/)
+    .withMessage('La descripción solo debe contener letras y espacios'),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+    next();
   }
-
-  if (nombre.length < 3) {
-    return res.status(400).json({
-      success: false,
-      message: 'El nombre debe tener al menos 3 caracteres'
-    });
-  }
-
-  // 🔒 Validar descripción (opcional pero si viene, debe tener mínimo)
-  if (descripcion && descripcion.trim().length > 0 && descripcion.length < 10) {
-    return res.status(400).json({
-      success: false,
-      message: 'La descripción debe tener al menos 10 caracteres'
-    });
-  }
-
-  next();
-};
+];
 
 module.exports = {
   createServicioValidation
