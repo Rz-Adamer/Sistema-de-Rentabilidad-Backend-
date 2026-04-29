@@ -21,8 +21,16 @@ const authMiddleware = (req, res, next) => {
     // 💾 Guardar usuario en request
     req.user = decoded;
 
+    // 🔍 DEBUG: Log para verificar decodificación
+    console.log('🔐 [authMiddleware DEBUG]');
+    console.log('   Token decodificado:', JSON.stringify(decoded, null, 2));
+    console.log('   id_usuario =>', decoded.id_usuario);
+    console.log('   email =>', decoded.email);
+    console.log('   rol =>', decoded.rol);
+
     next();
   } catch (error) {
+    console.error('❌ Error en authMiddleware:', error.message);
     return res.status(401).json({
       success: false,
       message: 'Token inválido o expirado'
