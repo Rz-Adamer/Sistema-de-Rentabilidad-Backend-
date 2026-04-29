@@ -22,7 +22,59 @@ const createEmpresa = async ({ nombre }) => {
   return empresa;
 };
 
+const getEmpresaById = async ({ id, user }) => {
+  const empresa = await empresaRepository.findById(id);
+
+  if (!empresa) {
+    const error = new Error('Empresa no encontrada');
+    error.status = 404;
+    throw error;
+  }
+
+  // 🔐 REGLA: dueño solo ve su empresa
+  if (user.rol === 'dueno' && empresa.id_empresa !== user.id_empresa) {
+    const error = new Error('No tienes acceso a esta empresa');
+    error.status = 403;
+    throw error;
+  }
+
+  return empresa;
+};
+
+const updateEmpresa = async ({ id, nombre, user }) => {
+  // 🔍 verificar si existe
+  const empresa = await empresaRepository.findById(id);
+
+  if (!empresa) {
+    const error = new Error('Empresa no encontrada');
+    error.status = 404;
+    throw error;
+  }
+
+  // 🔐 VALIDACIÓN DE PROPIEDAD
+  if (user.rol === 'dueno' && empresa.id_empresa !== user.id_empresa) {
+    const error = new Error('No puedes modificar esta empresa');
+    error.status = 403;
+    throw error;
+  }
+
+  // 🔒 evitar duplicados (excepto sí misma)
+  const empresaDuplicada = await empresaRepository.findByName(nombre);
+
+  if (empresaDuplicada && empresaDuplicada.id_empresa !== parseInt(id)) {
+    const error = new Error('Ya existe una empresa con ese nombre');
+    error.status = 400;
+    throw error;
+  }
+
+  const updated = await empresaRepository.update(id, nombre);
+
+  return updated;
+};
+
 module.exports = {
   getEmpresas,
-  createEmpresa
+  createEmpresa,
+  getEmpresaById,
+  updateEmpresa
 };

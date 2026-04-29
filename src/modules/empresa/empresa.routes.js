@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
 const empresaController = require('./empresa.controller');
-const { createEmpresaValidation } = require('./empresa.validation');
+const { createEmpresaValidation, updateEmpresaValidation } = require('./empresa.validation');
+
 const auth = require('../../modules/middlewares/authMiddleware');
 const role = require('../../modules/middlewares/roleMiddleware');
 
@@ -15,6 +17,18 @@ router.post(
     role('admin'),
     createEmpresaValidation,
     empresaController.createEmpresa
+);
+
+// GET /empresas/:id
+router.get('/:id', auth, role('admin', 'dueno'), empresaController.getEmpresaById);
+
+// PUT /empresas/:id
+router.put(
+    '/:id',
+    auth,
+    role('admin', 'dueno'),
+    updateEmpresaValidation,
+    empresaController.updateEmpresa
 );
 
 module.exports = router;
