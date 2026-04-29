@@ -1,49 +1,39 @@
-const { compare } = require("bcrypt");
-const pool = require("../../config/db");
+const authRepository = require("../auth/auth.repository");
 const { comparePassword } = require("../../utils/hash");
 const { generateToken } = require("../../utils/jwt");
 
-const loginService = async (email, password) => {
-  const query = `
-    SELECT id_usuario, nombre, email, password, rol, is_active
-    FROM usuario
-    WHERE email = $1
-    LIMIT 1
-    `;
+const loginService = async(email, password) => {
+    const user = await authRepository.findUserByEmail(email);
 
-  const result = await pool.query(query, [email]);
+    if (!user) {
+        throw new Error("CREDENCIALES_INVALIDAS");
+    }
 
-  if (result.rows.length === 0) {
-    throw new Error("CREDENCIALES_INVALIDAS");
-  }
+    if (!user.is_active) {
+        throw new Error("USUARIO_INACTIVO");
+    }
 
-  const user = result.rows[0];
+    const validPassword = await comparePassword(password, user.password);
 
-  if (!user.is_active) {
-    throw new Error("USUARIO_INACTIVO");
-  }
+    if (!validPassword) {
+        throw new Error("CREDENCIALES_INVALIDAS");
+    }
 
-  const validPassword = await comparePassword(password, user.password);
+    const token = generateToken({
+        id_usuario: user.id_usuario,
+        email: user.email,
+        rol: user.rol,
+    });
 
-  if (!validPassword) {
-    throw new Error("CREDENCIALES_INVALIDAS");
-  }
-
-  const token = generateToken({
-    id_usuario: user.id_usuario,
-    email: user.email,
-    rol: user.rol,
-  });
-
-  return {
-    token,
-    user: {
-      id_usuario: user.id_usuario,
-      nombre: user.nombre,
-      email: user.email,
-      rol: user.rol,
-    },
-  };
+    return {
+        token,
+        user: {
+            id_usuario: user.id_usuario,
+            nombre: user.nombre,
+            email: user.email,
+            rol: user.rol,
+        },
+    };
 };
 
 module.exports = { loginService };
