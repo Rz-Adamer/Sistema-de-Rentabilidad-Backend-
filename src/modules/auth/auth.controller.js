@@ -1,4 +1,49 @@
-const { loginService } = require("../auth/auth.service");
+const { loginService, registerOwnerService } = require("../auth/auth.service");
+
+const registerOwner = async(req, res) => {
+    try {
+        const { id_empresa, nombre, email, password } = req.body;
+
+        if (!id_empresa || !nombre || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Todos los campos son obligatorios",
+            });
+        }
+
+        const newUser = await registerOwnerService(
+            id_empresa,
+            nombre,
+            email,
+            password,
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Usuario dueño creado correctamente",
+            user: newUser,
+        });
+    } catch (error) {
+        if (error.message === "EMAIL_YA_EXISTE") {
+            return res.status(409).json({
+                success: false,
+                message: "Correo ya registrado",
+            });
+        }
+
+        if (error.message === "EMAIL_INVALIDO") {
+            return res.status(400).json({
+                success: false,
+                message: "Correo inválido",
+            });
+        }
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Error interno del servidor",
+        });
+    }
+};
 
 const login = async(req, res) => {
     try {
@@ -32,4 +77,7 @@ const login = async(req, res) => {
     }
 };
 
-module.exports = { login };
+module.exports = {
+    login,
+    registerOwner,
+};

@@ -1,7 +1,8 @@
 const authRepository = require("../auth/auth.repository");
-const { comparePassword } = require("../../utils/hash");
+const { hashPassword, comparePassword } = require("../../utils/hash");
 const { generateToken } = require("../../utils/jwt");
 
+//LOGIN
 const loginService = async(email, password) => {
     const user = await authRepository.findUserByEmail(email);
 
@@ -36,4 +37,38 @@ const loginService = async(email, password) => {
     };
 };
 
-module.exports = { loginService };
+//Registra Dueño
+const registerOwnerService = async(id_empresa, nombre, email, password) => {
+    // validar email formato
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        throw new Error("EMAIL_INVALIDO");
+    }
+    // validar email único
+    const existingUser = await authRepository.findUserByEmail(email);
+    if (existingUser) {
+        throw new Error("EMAIL_YA_EXISTE");
+    }
+
+    // encriptar password
+    const hashedPassword = await hashPassword(password);
+
+    // rol fijo dueño
+    const rol = "dueno";
+
+    // guardar
+    const newUser = await authRepository.createOwner(
+        id_empresa,
+        nombre,
+        email,
+        hashedPassword,
+        rol,
+    );
+
+    return newUser;
+};
+
+module.exports = {
+    loginService,
+    registerOwnerService,
+};
