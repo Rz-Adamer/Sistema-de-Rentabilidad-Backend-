@@ -23,6 +23,22 @@ const getUsuarios = async (req, res, next) => {
     }
 };
 
+const createUsuario = async (req, res, next) => {
+    try {
+        const data = req.body;
+
+        const usuario = await usuarioService.createUsuario(data);
+
+        res.status(201).json({
+            success: true,
+            data: usuario
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
-    getUsuarios
+    getUsuarios,
+    createUsuario
 };

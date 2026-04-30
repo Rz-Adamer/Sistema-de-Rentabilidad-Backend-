@@ -44,8 +44,30 @@ const findByEmpresa = async (id_empresa, currentUserId) => {
   return result.rows;
 };
 
+const findByEmail = async (email) => {
+  const result = await pool.query(
+    'SELECT * FROM usuario WHERE email = $1',
+    [email]
+  );
+
+  return result.rows[0];
+};
+
+const create = async ({ nombre, email, password, rol, id_empresa }) => {
+  const result = await pool.query(
+    `INSERT INTO usuario (nombre, email, password, rol, id_empresa)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id_usuario, nombre, email, rol, id_empresa`,
+    [nombre, email, password, rol, id_empresa]
+  );
+
+  return result.rows[0];
+};
+
 module.exports = {
   findById,
   findOnlyDueno,
-  findByEmpresa
+  findByEmpresa,
+  findByEmail,
+  create
 };
