@@ -2,7 +2,7 @@ const pool = require('../../config/db');
 
 const findAll = async () => {
   const result = await pool.query(
-    'SELECT id_empresa, nombre FROM empresa WHERE true'
+    'SELECT id_empresa, nombre FROM empresa ORDER BY id_empresa DESC'
   );
 
   return result.rows;

@@ -2,14 +2,6 @@ const empresaService = require('./empresa.service');
 
 const getEmpresas = async (req, res, next) => {
   try {
-    // 📌 Verificar que el usuario esté autenticado
-    if (!req.user || !req.user.id_usuario) {
-      return res.status(401).json({
-        success: false,
-        message: "Usuario no autenticado",
-      });
-    }
-
     const empresas = await empresaService.getEmpresas();
 
     // ✅ Caso: no hay empresas registradas
@@ -34,15 +26,6 @@ const getEmpresas = async (req, res, next) => {
 const createEmpresa = async (req, res, next) => {
   try {
     const { nombre } = req.body;
-
-    // 📌 Verificar que el usuario esté autenticado
-    if (!req.user || !req.user.id_usuario) {
-      return res.status(401).json({
-        success: false,
-        message: "Usuario no autenticado",
-      });
-    }
-
     const nuevaEmpresa = await empresaService.createEmpresa({ nombre });
 
     res.status(201).json({
@@ -57,7 +40,6 @@ const createEmpresa = async (req, res, next) => {
 const getEmpresaById = async (req, res, next) => {
   try {
     const { id } = req.params;
-
     const empresa = await empresaService.getEmpresaById({ id, user: req.user });
 
     res.status(200).json({

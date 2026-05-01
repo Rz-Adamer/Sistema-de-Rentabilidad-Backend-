@@ -2,17 +2,17 @@ const usuarioService = require('./usuario.service');
 
 const getUsuarios = async (req, res, next) => {
     try {
-        // 📌 Verificar que el usuario esté autenticado
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({
-                success: false,
-                message: "Usuario no autenticado",
+        const user = req.user; // viene del JWT
+        const usuarios = await usuarioService.getUsuarios(user);
+
+        // ✅ Caso: no hay usuarios registrados
+        if (usuarios.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "No hay usuarios disponibles",
+                data: [],
             });
         }
-
-        const user = req.user; // viene del JWT
-
-        const usuarios = await usuarioService.getUsuarios(user);
 
         res.status(200).json({
             success: true,
@@ -25,14 +25,6 @@ const getUsuarios = async (req, res, next) => {
 
 const createUsuario = async (req, res, next) => {
     try {
-        // 📌 Verificar que el usuario esté autenticado
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({
-                success: false,
-                message: "Usuario no autenticado",
-            });
-        }
-
         const usuario = await usuarioService.createUsuario(
             req.body,
             req.user

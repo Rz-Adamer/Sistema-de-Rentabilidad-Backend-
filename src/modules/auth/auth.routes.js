@@ -8,7 +8,7 @@ const authController = require("./auth.controller");
 
 router.post("/login", login);
 
-//admin crea dueño
+//admin crea propietario
 router.post(
     "/register-owner",
     authMiddleware,

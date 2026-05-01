@@ -8,7 +8,7 @@ const getUsuarios = async (user) => {
     return await usuarioRepository.findOnlypropietario(user.id_usuario);
   }
 
-  // 🏢 dueño solo su empresa
+  // 🏢 propietario solo su empresa
   if (user.rol === 'propietario') {
     return await usuarioRepository.findByEmpresa(user.id_empresa, user.id_usuario);
   }
@@ -34,7 +34,7 @@ const createUsuario = async (data, currentUser) => {
 
   let rolFinal;
 
-  // 👑 rol por defecto si no viene (admin → dueño)
+  // 👑 rol por defecto si no viene (admin → propietario)
   if (currentUser.rol === 'admin') {
     rolFinal = 'propietario';
   } else {
@@ -51,18 +51,29 @@ const createUsuario = async (data, currentUser) => {
       throw new Error('Admin debe especificar la empresa');
     }
 
-    // admin SOLO crea dueño
+    // admin SOLO crea propietario
     if (rol && rol !== 'propietario') {
-      throw new Error('Admin solo puede crear usuarios dueño');
+      throw new Error('Admin solo puede crear usuarios propietario');
     }
 
     empresaFinal = id_empresa;
   }
 
+  // 🚨 validar único propietario por empresa
+  if (rolFinal === 'propietario') {
+    const existePropietario = await usuarioRepository.findPropietarioByEmpresa(empresaFinal);
+
+    if (existePropietario) {
+      const error = new Error('La empresa ya tiene un propietario');
+      error.status = 400;
+      throw error;
+    }
+  }
+
   if (currentUser.rol === 'propietario') {
-    // dueño NO puede crear dueño
+    // propietario NO puede crear propietario
     if (rol === 'propietario') {
-      throw new Error('Dueño no puede crear otro dueño');
+      throw new Error('propietario no puede crear otro propietario');
     }
 
     // empresa viene del token

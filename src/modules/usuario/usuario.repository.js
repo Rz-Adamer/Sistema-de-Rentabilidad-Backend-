@@ -32,7 +32,7 @@ const findOnlypropietario = async (currentUserId) => {
   return result.rows;
 };
 
-// 🏢 dueño
+// 🏢 propietario
 const findByEmpresa = async (id_empresa, currentUserId) => {
   const result = await pool.query(`
     SELECT id_usuario, nombre, email, rol
@@ -48,6 +48,19 @@ const findByEmail = async (email) => {
   const result = await pool.query(
     'SELECT * FROM usuario WHERE email = $1',
     [email]
+  );
+
+  return result.rows[0];
+};
+
+const findPropietarioByEmpresa = async (id_empresa) => {
+  const result = await pool.query(
+    `SELECT id_usuario 
+     FROM usuario
+     WHERE id_empresa = $1 
+     AND rol = 'propietario'
+     AND is_active = true`,
+    [id_empresa]
   );
 
   return result.rows[0];
@@ -69,5 +82,6 @@ module.exports = {
   findOnlypropietario,
   findByEmpresa,
   findByEmail,
+  findPropietarioByEmpresa,
   create
 };

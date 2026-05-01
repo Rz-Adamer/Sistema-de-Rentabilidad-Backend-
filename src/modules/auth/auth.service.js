@@ -38,7 +38,7 @@ const loginService = async (email, password) => {
     };
 };
 
-//Registra Dueño
+//Registra propietario
 const registerOwnerService = async (id_empresa, nombre, email, password) => {
     // validar email formato
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -54,7 +54,7 @@ const registerOwnerService = async (id_empresa, nombre, email, password) => {
     // encriptar password
     const hashedPassword = await hashPassword(password);
 
-    // rol fijo dueño
+    // rol fijo propietario
     const rol = "propietario";
 
     // guardar

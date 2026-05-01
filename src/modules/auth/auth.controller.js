@@ -1,6 +1,6 @@
 const { loginService, registerOwnerService } = require("../auth/auth.service");
 
-const registerOwner = async(req, res) => {
+const registerOwner = async (req, res) => {
     try {
         const { id_empresa, nombre, email, password } = req.body;
 
@@ -20,7 +20,7 @@ const registerOwner = async(req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Usuario dueño creado correctamente",
+            message: "Usuario propietario creado correctamente",
             user: newUser,
         });
     } catch (error) {
@@ -45,7 +45,7 @@ const registerOwner = async(req, res) => {
     }
 };
 
-const login = async(req, res) => {
+const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 

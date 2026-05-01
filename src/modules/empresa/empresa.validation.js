@@ -1,4 +1,5 @@
-const { body, param, validationResult } = require('express-validator');
+const { body, param } = require('express-validator');
+const { handleValidationErrors } = require('../../modules/middlewares/validationMiddleware');
 
 const createEmpresaValidation = [
   body('nombre')
@@ -7,37 +8,19 @@ const createEmpresaValidation = [
     .matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/)
     .withMessage('El nombre solo debe contener letras y espacios'),
 
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-    next();
-  }
+  handleValidationErrors
 ];
 
-const getEmpresaByIdValidation = [
+const empresaIdParamValidation = [
   param('id')
-    .isInt().withMessage('El id debe ser numérico'),
+    .isInt({ min: 1 }).withMessage('ID de empresa inválido'),
 
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-    next();
-  }
+  handleValidationErrors
 ];
 
 const updateEmpresaValidation = [
   param('id')
-    .isInt().withMessage('El id debe ser numérico'),
+    .isInt().withMessage('ID de empresa inválido'),
 
   body('nombre')
     .notEmpty().withMessage('El nombre es obligatorio')
@@ -45,20 +28,11 @@ const updateEmpresaValidation = [
     .matches(/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/)
     .withMessage('El nombre solo debe contener letras y espacios'),
 
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        errors: errors.array()
-      });
-    }
-    next();
-  }
+  handleValidationErrors
 ];
 
 module.exports = {
   createEmpresaValidation,
-  getEmpresaByIdValidation,
+  empresaIdParamValidation,
   updateEmpresaValidation
 };

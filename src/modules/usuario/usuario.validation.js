@@ -1,5 +1,6 @@
-const { body, validationResult } = require('express-validator');
+const { body } = require('express-validator');
 const empresaRepository = require('../empresa/empresa.repository');
+const { handleValidationErrors } = require('../../modules/middlewares/validationMiddleware');
 
 const createUsuarioValidation = [
     body('nombre')
@@ -9,6 +10,7 @@ const createUsuarioValidation = [
         .withMessage('El nombre solo debe contener letras y espacios'),
 
     body('email')
+        .notEmpty().withMessage('El email es obligatorio')
         .isEmail().withMessage('Email inválido'),
 
     body('password')
@@ -34,7 +36,29 @@ const createUsuarioValidation = [
         }),
 
     body('rol')
-        .isIn(['lider', 'empleado', 'propietario']).withMessage('Rol inválido'),
+        .custom((value, { req }) => {
+            const user = req.user;
+
+            if (user.rol === 'admin') {
+                // admin NO necesita enviar rol
+                if (value && value !== 'propietario') {
+                    throw new Error('Admin solo puede crear propietario');
+                }
+            }
+
+            if (user.rol === 'propietario') {
+                // propietario SÍ debe enviar rol
+                if (!value) {
+                    throw new Error('Rol es obligatorio');
+                }
+
+                if (value === 'propietario') {
+                    throw new Error('No puede crear otro propietario');
+                }
+            }
+
+            return true;
+        }),
 
     body('monto')
         .optional()
@@ -45,16 +69,7 @@ const createUsuarioValidation = [
         .isIn(['mensual', 'por_hora'])
         .withMessage('Tipo de pago inválido o vacío'),
 
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
-        }
-        next();
-    }
+    handleValidationErrors
 ];
 
 module.exports = {
