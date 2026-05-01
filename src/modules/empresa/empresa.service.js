@@ -32,7 +32,7 @@ const getEmpresaById = async ({ id, user }) => {
   }
 
   // 🔐 REGLA: dueño solo ve su empresa
-  if (user.rol === 'dueno' && empresa.id_empresa !== user.id_empresa) {
+  if (user.rol === 'propietario' && empresa.id_empresa !== user.id_empresa) {
     const error = new Error('No tienes acceso a esta empresa');
     error.status = 403;
     throw error;
@@ -52,7 +52,7 @@ const updateEmpresa = async ({ id, nombre, user }) => {
   }
 
   // 🔐 VALIDACIÓN DE PROPIEDAD
-  if (user.rol === 'dueno' && empresa.id_empresa !== user.id_empresa) {
+  if (user.rol === 'propietario' && empresa.id_empresa !== user.id_empresa) {
     const error = new Error('No puedes modificar esta empresa');
     error.status = 403;
     throw error;

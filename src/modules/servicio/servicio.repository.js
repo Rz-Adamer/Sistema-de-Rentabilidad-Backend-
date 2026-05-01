@@ -54,18 +54,22 @@ const findByIdFull = async (servicioId) => {
   return result.rows[0];
 };
 
-const findByNombreAndEmpresa = async (nombre, empresaId) => {
-  const result = await pool.query(
-    `SELECT 
-        id_servicio,
-        nombre
-     FROM servicio
-     WHERE LOWER(nombre) = LOWER($1)
-       AND id_empresa = $2
-       AND is_active = true`,
-    [nombre, empresaId]
-  );
+const findByNombreAndEmpresa = async (nombre, empresaId, servicioId = null) => {
+  let query = `
+    SELECT id_servicio, nombre
+    FROM servicio
+    WHERE LOWER(nombre) = LOWER($1)
+    AND id_empresa = $2
+  `;
 
+  const params = [nombre.trim(), empresaId];
+
+  if (servicioId) {
+    query += ` AND id_servicio != $3`;
+    params.push(servicioId);
+  }
+
+  const result = await pool.query(query, params);
   return result.rows[0];
 };
 

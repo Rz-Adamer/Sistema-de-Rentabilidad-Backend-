@@ -5,15 +5,24 @@ const getServiciosByEmpresa = async (empresaId) => {
 };
 
 const createServicio = async ({ nombre, descripcion, empresaId }) => {
-  const existe = await servicioRepository.findByNombreAndEmpresa(nombre, empresaId);
+  const nombreLimpio = nombre.trim();
 
-  if (existe) {
+  const duplicado = await servicioRepository.findByNombreAndEmpresa(
+    nombreLimpio,
+    empresaId
+  );
+
+  if (duplicado) {
     const error = new Error('Ya existe un servicio con este nombre en tu empresa');
     error.status = 400;
     throw error;
   }
 
-  return await servicioRepository.create({ nombre, descripcion, empresaId });
+  return await servicioRepository.create({
+    nombre: nombreLimpio,
+    descripcion,
+    empresaId
+  });
 };
 
 const getServicioById = async (servicioId, empresaId) => {
@@ -49,14 +58,24 @@ const updateServicio = async (servicioId, empresaId, { nombre, descripcion }) =>
     throw error;
   }
 
-  if (nombre && nombre.toLowerCase() !== servicio.nombre.toLowerCase()) {
-    const duplicado = await servicioRepository.findByNombreAndEmpresa(nombre, empresaId);
-    if (duplicado) {
-      const error = new Error('Ya existe un servicio con este nombre en tu empresa');
-      error.status = 400;
-      throw error;
-    }
+  const nombreLimpio = nombre.trim();
+
+  const duplicado = await servicioRepository.findByNombreAndEmpresa(
+    nombreLimpio,
+    empresaId
+  );
+
+  if (duplicado) {
+    const error = new Error('Ya existe un servicio con este nombre en tu empresa');
+    error.status = 400;
+    throw error;
   }
+
+  return await servicioRepository.create({
+    nombre: nombreLimpio,
+    descripcion,
+    empresaId
+  });
 
   return await servicioRepository.update(servicioId, { nombre, descripcion });
 };

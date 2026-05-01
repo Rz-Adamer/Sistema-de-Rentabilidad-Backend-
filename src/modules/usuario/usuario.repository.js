@@ -14,7 +14,7 @@ const findById = async (usuarioId) => {
 };
 
 // 👑 admin
-const findOnlyDueno = async (currentUserId) => {
+const findOnlypropietario = async (currentUserId) => {
   const result = await pool.query(`
     SELECT 
       u.id_usuario,
@@ -23,7 +23,7 @@ const findOnlyDueno = async (currentUserId) => {
       e.nombre AS empresa_nombre
     FROM usuario u
     INNER JOIN empresa e ON u.id_empresa = e.id_empresa
-    WHERE u.rol = 'dueno'
+    WHERE u.rol = 'propietario'
       AND u.is_active = true
       AND u.id_usuario != $1
     ORDER BY u.id_usuario ASC
@@ -66,7 +66,7 @@ const create = async ({ nombre, email, password, rol, id_empresa }) => {
 
 module.exports = {
   findById,
-  findOnlyDueno,
+  findOnlypropietario,
   findByEmpresa,
   findByEmail,
   create

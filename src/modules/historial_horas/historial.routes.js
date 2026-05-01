@@ -11,7 +11,7 @@ const role = require('../../modules/middlewares/roleMiddleware');
 router.post(
     '/',
     auth,
-    role('dueno'),
+    role('propietario'),
     createHistorialValidation,
     historialController.createHistorial
 );

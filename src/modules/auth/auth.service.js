@@ -55,7 +55,7 @@ const registerOwnerService = async (id_empresa, nombre, email, password) => {
     const hashedPassword = await hashPassword(password);
 
     // rol fijo dueño
-    const rol = "dueno";
+    const rol = "propietario";
 
     // guardar
     const newUser = await authRepository.createOwner(

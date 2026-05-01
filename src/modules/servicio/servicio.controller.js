@@ -3,34 +3,7 @@ const usuarioRepository = require("../usuario/usuario.repository");
 
 const getServicios = async (req, res, next) => {
     try {
-        // 📌 Verificar que el usuario esté autenticado
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({
-                success: false,
-                message: "Usuario no autenticado",
-            });
-        }
-
-        const { id_usuario } = req.user;
-
-        // 🔍 Obtener usuario completo para asegurar id_empresa
-        const userDB = await usuarioRepository.findById(id_usuario);
-
-        if (!userDB) {
-            return res.status(404).json({
-                success: false,
-                message: "Usuario no encontrado",
-            });
-        }
-
-        if (!userDB.id_empresa) {
-            return res.status(400).json({
-                success: false,
-                message: "El usuario no tiene una empresa asociada",
-            });
-        }
-
-        const empresaId = userDB.id_empresa;
+        const empresaId = req.user.id_empresa;
 
         // 🔍 Obtener servicios filtrados por empresa
         const servicios = await servicioService.getServiciosByEmpresa(empresaId);
@@ -57,38 +30,12 @@ const getServicios = async (req, res, next) => {
 const createServicio = async (req, res, next) => {
     try {
         const { nombre, descripcion } = req.body;
-
-        // 📌 Verificar que el usuario esté autenticado
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({
-                success: false,
-                message: "Usuario no autenticado",
-            });
-        }
-
-        const { id_usuario } = req.user;
-
-        // 🔍 Obtener empresa del usuario desde BD
-        const userDB = await usuarioRepository.findById(id_usuario);
-
-        if (!userDB) {
-            return res.status(404).json({
-                success: false,
-                message: "Usuario no encontrado",
-            });
-        }
-
-        if (!userDB.id_empresa) {
-            return res.status(400).json({
-                success: false,
-                message: "El usuario no tiene una empresa asociada",
-            });
-        }
+        const empresaId = req.empresaId;
 
         const nuevoServicio = await servicioService.createServicio({
             nombre,
             descripcion,
-            empresaId: userDB.id_empresa,
+            empresaId: empresaId,
         });
 
         return res.status(201).json({
@@ -102,24 +49,18 @@ const createServicio = async (req, res, next) => {
 
 const getServicioById = async (req, res, next) => {
     try {
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
-        }
-
-        const { id_usuario } = req.user;
         const servicioId = parseInt(req.params.id, 10);
+        const empresaId = req.user.empresaId;
 
-        const userDB = await usuarioRepository.findById(id_usuario);
-        if (!userDB) {
-            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
-        }
-        if (!userDB.id_empresa) {
-            return res.status(400).json({ success: false, message: 'El usuario no tiene una empresa asociada' });
-        }
+        const servicio = await servicioService.getServicioById(
+            servicioId,
+            empresaId
+        );
 
-        const servicio = await servicioService.getServicioById(servicioId, userDB.id_empresa);
-
-        return res.status(200).json({ success: true, data: servicio });
+        return res.status(200).json({
+            success: true,
+            data: servicio
+        });
     } catch (error) {
         next(error);
     }
@@ -127,25 +68,20 @@ const getServicioById = async (req, res, next) => {
 
 const updateServicio = async (req, res, next) => {
     try {
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
-        }
-
-        const { id_usuario } = req.user;
         const servicioId = parseInt(req.params.id, 10);
         const { nombre, descripcion } = req.body;
+        const empresaId = req.empresaId;
 
-        const userDB = await usuarioRepository.findById(id_usuario);
-        if (!userDB) {
-            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
-        }
-        if (!userDB.id_empresa) {
-            return res.status(400).json({ success: false, message: 'El usuario no tiene una empresa asociada' });
-        }
+        const servicio = await servicioService.updateServicio(
+            servicioId,
+            empresaId,
+            { nombre, descripcion }
+        );
 
-        const servicio = await servicioService.updateServicio(servicioId, userDB.id_empresa, { nombre, descripcion });
-
-        return res.status(200).json({ success: true, data: servicio });
+        return res.status(200).json({
+            success: true,
+            data: servicio
+        });
     } catch (error) {
         next(error);
     }
@@ -153,22 +89,13 @@ const updateServicio = async (req, res, next) => {
 
 const desactivarServicio = async (req, res, next) => {
     try {
-        if (!req.user || !req.user.id_usuario) {
-            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
-        }
-
-        const { id_usuario } = req.user;
         const servicioId = parseInt(req.params.id, 10);
+        const empresaId = req.empresaId;
 
-        const userDB = await usuarioRepository.findById(id_usuario);
-        if (!userDB) {
-            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
-        }
-        if (!userDB.id_empresa) {
-            return res.status(400).json({ success: false, message: 'El usuario no tiene una empresa asociada' });
-        }
-
-        const result = await servicioService.desactivarServicio(servicioId, userDB.id_empresa);
+        const result = await servicioService.desactivarServicio(
+            servicioId,
+            empresaId
+        );
 
         return res.status(200).json({
             success: true,

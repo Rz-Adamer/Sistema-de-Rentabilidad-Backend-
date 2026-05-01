@@ -5,11 +5,11 @@ const historialRepository = require('../historial_horas/historial.repository');
 const getUsuarios = async (user) => {
   // 👑 admin ve todo
   if (user.rol === 'admin') {
-    return await usuarioRepository.findOnlyDueno(user.id_usuario);
+    return await usuarioRepository.findOnlypropietario(user.id_usuario);
   }
 
   // 🏢 dueño solo su empresa
-  if (user.rol === 'dueno') {
+  if (user.rol === 'propietario') {
     return await usuarioRepository.findByEmpresa(user.id_empresa, user.id_usuario);
   }
 
@@ -36,7 +36,7 @@ const createUsuario = async (data, currentUser) => {
 
   // 👑 rol por defecto si no viene (admin → dueño)
   if (currentUser.rol === 'admin') {
-    rolFinal = 'dueno';
+    rolFinal = 'propietario';
   } else {
     if (!rol) {
       throw new Error('Rol es obligatorio');
@@ -52,16 +52,16 @@ const createUsuario = async (data, currentUser) => {
     }
 
     // admin SOLO crea dueño
-    if (rol && rol !== 'dueno') {
+    if (rol && rol !== 'propietario') {
       throw new Error('Admin solo puede crear usuarios dueño');
     }
 
     empresaFinal = id_empresa;
   }
 
-  if (currentUser.rol === 'dueno') {
+  if (currentUser.rol === 'propietario') {
     // dueño NO puede crear dueño
-    if (rol === 'dueno') {
+    if (rol === 'propietario') {
       throw new Error('Dueño no puede crear otro dueño');
     }
 

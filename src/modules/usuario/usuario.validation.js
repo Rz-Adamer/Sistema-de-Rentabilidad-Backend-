@@ -34,7 +34,7 @@ const createUsuarioValidation = [
         }),
 
     body('rol')
-        .isIn(['lider', 'empleado','dueno']).withMessage('Rol inválido'),
+        .isIn(['lider', 'empleado', 'propietario']).withMessage('Rol inválido'),
 
     body('monto')
         .optional()

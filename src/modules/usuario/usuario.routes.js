@@ -11,7 +11,7 @@ const role = require('../../modules/middlewares/roleMiddleware');
 router.get(
   '/',
   auth,
-  role('admin', 'dueno'),
+  role('admin', 'propietario'),
   usuarioController.getUsuarios
 );
 
@@ -19,7 +19,7 @@ router.get(
 router.post(
   '/',
   auth,
-  role('admin', 'dueno'), // ambos pueden entrar
+  role('admin', 'propietario'), // ambos pueden entrar
   createUsuarioValidation,
   usuarioController.createUsuario
 );
