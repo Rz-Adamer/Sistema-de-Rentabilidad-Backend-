@@ -1,9 +1,17 @@
 const pool = require('../../config/db');
 
 const findAll = async () => {
-  const result = await pool.query(
-    'SELECT id_empresa, nombre FROM empresa ORDER BY id_empresa DESC'
-  );
+  const result = await pool.query(`
+    SELECT 
+      e.id_empresa,
+      e.nombre AS empresa_nombre,
+      u.nombre AS propietario_nombre
+    FROM empresa e
+    LEFT JOIN usuario u 
+      ON u.id_empresa = e.id_empresa 
+      AND u.rol = 'propietario'
+    ORDER BY e.id_empresa DESC
+  `);
 
   return result.rows;
 };
