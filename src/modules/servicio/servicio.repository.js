@@ -12,6 +12,7 @@ const findByEmpresaId = async (empresaId) => {
      INNER JOIN empresa e
         ON e.id_empresa = s.id_empresa
      WHERE s.id_empresa = $1
+     AND s.is_active = true
      ORDER BY s.is_active DESC, s.nombre ASC`,
     [empresaId]
   );

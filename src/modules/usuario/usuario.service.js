@@ -1,58 +1,124 @@
 const bcrypt = require("bcrypt");
 const usuarioRepository = require("./usuario.repository");
+const historialRepository = require('../historial_horas/historial.repository');
 
-const getOwners = async () => {
-  return await usuarioRepository.findAllOwners();
-};
+// const getOwners = async () => {
+//   return await usuarioRepository.findAllOwners();
+// };
 
 const getUsuarios = async (user) => {
+  // 👑 admin ve todo
+  if (user.rol === 'admin') {
+    return await usuarioRepository.findOnlypropietario(user.id_usuario);
+  }
+  // 🏢 propietario solo su empresa
   if (user.rol === "propietario") {
     return await usuarioRepository.findByEmpresa(user.id_empresa, user.id_usuario);
   }
-  if (user.rol === "lider") {
-    return await usuarioRepository.findByEmpresa(user.id_empresa, user.id_usuario);
-  }
+  // if (user.rol === "lider") {
+  //   return await usuarioRepository.findByEmpresa(user.id_empresa, user.id_usuario);
+  // }
   const error = new Error("No autorizado");
   error.status = 403;
   throw error;
 };
 
 const createUsuario = async (data, currentUser) => {
-  const { nombre, email, password, rol } = data;
+  const { nombre, email, password, rol, monto, tipo_pago, id_empresa } = data;
 
-  if (currentUser.rol !== "propietario") {
-    const error = new Error("No autorizado");
-    error.status = 403;
-    throw error;
-  }
-
-  if (!nombre || !email || !password || !rol) {
-    const error = new Error("Todos los campos son obligatorios");
-    error.status = 400;
-    throw error;
-  }
-
-  if (!["lider", "empleado"].includes(rol)) {
-    const error = new Error("Rol inválido");
-    error.status = 400;
-    throw error;
-  }
-
+  // 📧 validar email único
   const existe = await usuarioRepository.findByEmail(email);
   if (existe) {
-    const error = new Error("El email ya está registrado");
-    error.status = 409;
+    const error = new Error('El email ya está registrado');
+    error.status = 400;
     throw error;
   }
 
+  let empresaFinal;
+
+  let rolFinal;
+
+  // 👑 rol por defecto si no viene (admin → propietario)
+  if (currentUser.rol === 'admin') {
+    rolFinal = 'propietario';
+  } else {
+    if (!rol) {
+      throw new Error('Rol es obligatorio');
+    }
+    rolFinal = rol;
+  }
+
+  // 🔐 lógica por rol
+  if (currentUser.rol === 'admin') {
+    // admin debe indicar empresa
+    if (!id_empresa) {
+      throw new Error('Admin debe especificar la empresa');
+    }
+
+    // admin SOLO crea propietario
+    if (rol && rol !== 'propietario') {
+      throw new Error('Admin solo puede crear usuarios propietario');
+    }
+
+    empresaFinal = id_empresa;
+  }
+
+  // 🚨 validar único propietario por empresa
+  if (rolFinal === 'propietario') {
+    const existePropietario = await usuarioRepository.findPropietarioByEmpresa(empresaFinal);
+
+    if (existePropietario) {
+      const error = new Error('La empresa ya tiene un propietario');
+      error.status = 400;
+      throw error;
+    }
+  }
+
+  if (currentUser.rol === 'propietario') {
+    // propietario NO puede crear propietario
+    if (rol === 'propietario') {
+      throw new Error('propietario no puede crear otro propietario');
+    }
+
+    // empresa viene del token
+    empresaFinal = currentUser.id_empresa;
+  }
+
+  // 🔐 reglas de sueldo
+  if (rolFinal === 'empleado') {
+    if (!monto || !tipo_pago) {
+      throw new Error('Empleado requiere monto y tipo de pago');
+    }
+  } else {
+    if (monto || tipo_pago) {
+      throw new Error('Solo empleados pueden tener sueldo');
+    }
+  }
+
+  // 🔒 encriptar contraseña
   const hashedPassword = await bcrypt.hash(password, 10);
-  return await usuarioRepository.create({
+
+  // 👤 crear usuario
+  const usuario = await usuarioRepository.create({
     nombre,
     email,
     password: hashedPassword,
-    rol,
-    id_empresa: currentUser.id_empresa,
+    rol: rolFinal,
+    id_empresa: empresaFinal
   });
+
+  // 💰 historial si empleado
+  if (rolFinal === 'empleado') {
+    await historialRepository.create({
+      id_usuario: usuario.id_usuario,
+      tipo_pago,
+      monto,
+      fecha_inicio: new Date(),
+      horas_mensuales: null
+    });
+  }
+
+  return usuario;
 };
 
 const updateUsuario = async (id, data, currentUser) => {
@@ -112,13 +178,13 @@ const updateUsuario = async (id, data, currentUser) => {
   // Solo admin puede cambiar id_empresa e is_active de propietarios
   const updateData = {
     nombre: nombre || null,
-    email:  email  || null,
+    email: email || null,
     password: password ? await bcrypt.hash(password, 10) : null,
   };
 
   if (currentUser.rol === "admin") {
     if (id_empresa !== undefined) updateData.id_empresa = Number(id_empresa) || null;
-    if (is_active  !== undefined) updateData.is_active  = Boolean(is_active);
+    if (is_active !== undefined) updateData.is_active = Boolean(is_active);
   }
   if (currentUser.rol === "propietario" && rol !== undefined) {
     updateData.rol = rol;
@@ -196,7 +262,7 @@ const hardDeleteUsuario = async (id, currentUser) => {
 };
 
 module.exports = {
-  getOwners,
+  // getOwners,
   getUsuarios,
   createUsuario,
   updateUsuario,
