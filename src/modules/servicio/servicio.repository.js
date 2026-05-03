@@ -2,17 +2,17 @@ const pool = require("../../config/db");
 
 const findByEmpresaId = async (empresaId) => {
   const result = await pool.query(
-    `SELECT 
+    `SELECT
         s.id_servicio,
         s.nombre,
         s.descripcion,
+        s.is_active,
         e.nombre AS empresa
      FROM servicio s
-     INNER JOIN empresa e 
+     INNER JOIN empresa e
         ON e.id_empresa = s.id_empresa
      WHERE s.id_empresa = $1
-       AND s.is_active = true
-     ORDER BY s.nombre ASC`,
+     ORDER BY s.is_active DESC, s.nombre ASC`,
     [empresaId]
   );
 
@@ -118,6 +118,22 @@ const deactivate = async (servicioId) => {
   return result.rows[0];
 };
 
+const hardDelete = async (servicioId) => {
+  const result = await pool.query(
+    `DELETE FROM servicio WHERE id_servicio = $1 RETURNING id_servicio, nombre`,
+    [servicioId]
+  );
+  return result.rows[0];
+};
+
+const countProyectosByServicio = async (servicioId) => {
+  const result = await pool.query(
+    "SELECT COUNT(*) AS count FROM proyecto WHERE id_servicio = $1",
+    [servicioId]
+  );
+  return parseInt(result.rows[0].count, 10);
+};
+
 module.exports = {
   findByEmpresaId,
   findById,
@@ -126,4 +142,6 @@ module.exports = {
   create,
   update,
   deactivate,
+  hardDelete,
+  countProyectosByServicio,
 };

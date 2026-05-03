@@ -71,9 +71,26 @@ const updateEmpresa = async (req, res, next) => {
   }
 };
 
+const deleteEmpresa = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await empresaService.deleteEmpresa({ id, user: req.user });
+
+    res.status(200).json({
+      success: true,
+      message: 'Empresa eliminada correctamente',
+      data: deleted
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEmpresas,
   createEmpresa,
   getEmpresaById,
-  updateEmpresa
+  updateEmpresa,
+  deleteEmpresa
 };

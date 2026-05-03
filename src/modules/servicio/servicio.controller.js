@@ -107,10 +107,29 @@ const desactivarServicio = async (req, res, next) => {
     }
 };
 
+const eliminarServicio = async (req, res, next) => {
+    try {
+        if (!req.user || !req.user.id_usuario) {
+            return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+        }
+        const { id_usuario } = req.user;
+        const servicioId = parseInt(req.params.id, 10);
+        const userDB = await usuarioRepository.findById(id_usuario);
+        if (!userDB || !userDB.id_empresa) {
+            return res.status(400).json({ success: false, message: 'El usuario no tiene una empresa asociada' });
+        }
+        const result = await servicioService.eliminarServicio(servicioId, userDB.id_empresa);
+        return res.status(200).json({ success: true, message: 'Servicio eliminado correctamente', data: result });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getServicios,
     createServicio,
     getServicioById,
     updateServicio,
     desactivarServicio,
+    eliminarServicio,
 };

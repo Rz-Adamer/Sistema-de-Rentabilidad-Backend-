@@ -8,6 +8,8 @@ const empresaRoutes = require("./modules/empresa/empresa.routes");
 const servicioRoutes = require("./modules/servicio/servicio.routes");
 const usuarioRoutes = require("./modules/usuario/usuario.routes");
 const historialRoutes = require("./modules/historial_horas/historial.routes");
+const proyectoRoutes = require("./modules/proyecto/proyecto.routes");
+const horasRoutes = require("./modules/horas/horas.routes");
 
 const errorHandler = require("./modules/middlewares/errorHandler");
 
@@ -25,6 +27,8 @@ app.use("/api/empresas", empresaRoutes);
 app.use("/api/servicios", servicioRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/historiales", historialRoutes);
+app.use("/api/proyectos", proyectoRoutes);
+app.use("/api/horas", horasRoutes);
 
 // SIEMPRE AL FINAL
 app.use(errorHandler);

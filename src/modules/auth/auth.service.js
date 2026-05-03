@@ -10,7 +10,7 @@ const loginService = async (email, password) => {
         throw new Error("CREDENCIALES_INVALIDAS");
     }
 
-    if (!user.is_active) {
+    if (user.is_active === false) {
         throw new Error("USUARIO_INACTIVO");
     }
 
@@ -34,17 +34,41 @@ const loginService = async (email, password) => {
             nombre: user.nombre,
             email: user.email,
             rol: user.rol,
+            id_empresa: user.id_empresa,
         },
     };
 };
 
-//Registra propietario
+//Registra Propietario
 const registerOwnerService = async (id_empresa, nombre, email, password) => {
+    // validar nombre
+    if (!nombre || nombre.trim().length < 3) {
+        throw new Error("NOMBRE_CORTO");
+    }
+
     // validar email formato
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         throw new Error("EMAIL_INVALIDO");
     }
+
+    // validar fortaleza de contraseña
+    if (!password || password.length < 8) {
+        throw new Error("PASSWORD_DEBIL_LONGITUD");
+    }
+    if (!/[A-Z]/.test(password)) {
+        throw new Error("PASSWORD_DEBIL_MAYUSCULA");
+    }
+    if (!/[a-z]/.test(password)) {
+        throw new Error("PASSWORD_DEBIL_MINUSCULA");
+    }
+    if (!/[0-9]/.test(password)) {
+        throw new Error("PASSWORD_DEBIL_NUMERO");
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+        throw new Error("PASSWORD_DEBIL_ESPECIAL");
+    }
+
     // validar email único
     const existingUser = await authRepository.findUserByEmail(email);
     if (existingUser) {
@@ -69,7 +93,26 @@ const registerOwnerService = async (id_empresa, nombre, email, password) => {
     return newUser;
 };
 
+const getOwnerContactService = async (email) => {
+    const user = await authRepository.findUserByEmail(email);
+    if (!user) {
+        throw new Error("USUARIO_NO_ENCONTRADO");
+    }
+    if (user.rol === "propietario") {
+        return { email: user.email, nombre: user.nombre };
+    }
+    if (!user.id_empresa) {
+        throw new Error("SIN_EMPRESA");
+    }
+    const owner = await authRepository.findOwnerByEmpresaId(user.id_empresa);
+    if (!owner) {
+        throw new Error("PROPIETARIO_NO_ENCONTRADO");
+    }
+    return { email: owner.email, nombre: owner.nombre };
+};
+
 module.exports = {
     loginService,
     registerOwnerService,
+    getOwnerContactService,
 };

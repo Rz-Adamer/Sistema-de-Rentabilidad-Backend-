@@ -1,4 +1,4 @@
-const { loginService, registerOwnerService } = require("../auth/auth.service");
+const { loginService, registerOwnerService, getOwnerContactService } = require("../auth/auth.service");
 
 const registerOwner = async (req, res) => {
     try {
@@ -24,19 +24,22 @@ const registerOwner = async (req, res) => {
             user: newUser,
         });
     } catch (error) {
-        if (error.message === "EMAIL_YA_EXISTE") {
-            return res.status(409).json({
-                success: false,
-                message: "Correo ya registrado",
-            });
+        const validationErrors = {
+            NOMBRE_CORTO:           [422, "El nombre debe tener al menos 3 caracteres."],
+            EMAIL_INVALIDO:         [400, "El correo electrónico no es válido."],
+            EMAIL_YA_EXISTE:        [409, "Este correo ya está registrado."],
+            PASSWORD_DEBIL_LONGITUD:[422, "La contraseña debe tener al menos 8 caracteres."],
+            PASSWORD_DEBIL_MAYUSCULA:[422, "La contraseña debe contener al menos una letra mayúscula."],
+            PASSWORD_DEBIL_MINUSCULA:[422, "La contraseña debe contener al menos una letra minúscula."],
+            PASSWORD_DEBIL_NUMERO:  [422, "La contraseña debe contener al menos un número."],
+            PASSWORD_DEBIL_ESPECIAL:[422, "La contraseña debe contener al menos un carácter especial (ej: !@#$%)."],
+        };
+
+        if (validationErrors[error.message]) {
+            const [status, message] = validationErrors[error.message];
+            return res.status(status).json({ success: false, message });
         }
 
-        if (error.message === "EMAIL_INVALIDO") {
-            return res.status(400).json({
-                success: false,
-                message: "Correo inválido",
-            });
-        }
         console.error(error);
         return res.status(500).json({
             success: false,
@@ -77,7 +80,30 @@ const login = async (req, res) => {
     }
 };
 
+const getOwnerContact = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "El email es obligatorio" });
+        }
+        const result = await getOwnerContactService(email);
+        return res.status(200).json({ success: true, data: result });
+    } catch (error) {
+        const messages = {
+            USUARIO_NO_ENCONTRADO: [404, "No se encontró ningún usuario con ese correo."],
+            SIN_EMPRESA: [400, "Tu cuenta no está asociada a ninguna empresa."],
+            PROPIETARIO_NO_ENCONTRADO: [404, "No se encontró el propietario de tu empresa."],
+        };
+        if (messages[error.message]) {
+            const [status, message] = messages[error.message];
+            return res.status(status).json({ success: false, message });
+        }
+        return res.status(500).json({ success: false, message: "Error interno del servidor" });
+    }
+};
+
 module.exports = {
     login,
     registerOwner,
+    getOwnerContact,
 };
