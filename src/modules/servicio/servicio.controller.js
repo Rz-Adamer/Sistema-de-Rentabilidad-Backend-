@@ -50,7 +50,7 @@ const createServicio = async (req, res, next) => {
 const getServicioById = async (req, res, next) => {
     try {
         const servicioId = parseInt(req.params.id, 10);
-        const empresaId = req.user.empresaId;
+        const empresaId = req.user.id_empresa;
 
         const servicio = await servicioService.getServicioById(
             servicioId,
