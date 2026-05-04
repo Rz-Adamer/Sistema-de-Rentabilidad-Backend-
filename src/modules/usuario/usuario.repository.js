@@ -33,6 +33,7 @@ const findOnlypropietario = async (currentUserId) => {
       u.id_usuario,
       u.nombre,
       u.email,
+      u.id_empresa,
       e.nombre AS empresa_nombre
     FROM usuario u
     INNER JOIN empresa e ON u.id_empresa = e.id_empresa
