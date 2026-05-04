@@ -58,26 +58,26 @@ const updateServicio = async (servicioId, empresaId, { nombre, descripcion }) =>
     throw error;
   }
 
-  const nombreLimpio = nombre.trim();
+  const nombreLimpio = nombre?.trim();
 
-  const duplicado = await servicioRepository.findByNombreAndEmpresa(
-    nombreLimpio,
-    empresaId
-  );
+  if (nombreLimpio) {
+    const duplicado = await servicioRepository.findByNombreAndEmpresa(
+      nombreLimpio,
+      empresaId
+    );
 
-  if (duplicado) {
-    const error = new Error('Ya existe un servicio con este nombre en tu empresa');
-    error.status = 400;
-    throw error;
+    // ⚠️ evitar conflicto consigo mismo
+    if (duplicado && duplicado.id_servicio !== servicioId) {
+      const error = new Error('Ya existe un servicio con este nombre en tu empresa');
+      error.status = 400;
+      throw error;
+    }
   }
 
-  return await servicioRepository.create({
+  return await servicioRepository.update(servicioId, {
     nombre: nombreLimpio,
-    descripcion,
-    empresaId
+    descripcion
   });
-
-  return await servicioRepository.update(servicioId, { nombre, descripcion });
 };
 
 const desactivarServicio = async (servicioId, empresaId) => {
